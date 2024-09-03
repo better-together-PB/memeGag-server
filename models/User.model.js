@@ -18,6 +18,13 @@ const userSchema = new Schema(
       type: String,
       required: [true, "Name is required."],
     },
+    profileImage: {
+      type: String,
+      default: "https://static.thenounproject.com/png/4216248-200.png",
+    },
+    posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
+    likes: [{ type: Schema.Types.ObjectId, ref: "Like" }],
+    comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
