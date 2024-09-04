@@ -17,10 +17,11 @@ router.get("/:id", (req, res, next) => {
 });
 
 // DONT FORGET TO POPULATE
-router.get("/:id/:section", (req, res, next) => {
-  console.log(req.params.section);
+// Combine the two routes
+// Check for content value
+router.get("/:id/:content", (req, res, next) => {
   User.findById(req.params.id)
-    .select(`_id email name profileImage createdAt ${req.params.section}`)
+    .select(`_id email name profileImage createdAt ${req.params.content}`)
     .then((user) => {
       res.status(200).json({
         status: "success",

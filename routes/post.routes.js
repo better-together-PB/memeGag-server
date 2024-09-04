@@ -5,9 +5,11 @@ const Post = require("../models/Post.model");
 const User = require("../models/User.model");
 const Comment = require("../models/Comment.model");
 
-const { isAuthenticated } = require("../middleware/jwt.middleware.js");
+const { isAuthenticated } = require("../middleware/protected.middleware.js");
+const { isOwner } = require("../middleware/isOwner.middleware.js");
 
 router.post("/create", isAuthenticated, (req, res, next) => {
+  console.log(req.payload);
   User.findById(req.body.userId)
     .then((user) => {
       if (!user) {
@@ -36,6 +38,10 @@ router.get("/:id", (req, res, next) => {
   Post.findById(req.params.id)
     .populate({ path: "userId", select: "_id name" })
     .then((post) => {
+      if (!post) {
+        res.status(400).json({ message: "Post does not exist" });
+        return;
+      }
       res.status(200).json({
         status: "success",
         data: post,
@@ -44,10 +50,28 @@ router.get("/:id", (req, res, next) => {
     .catch((err) => next(err));
 });
 
+// Delete post from user
+router.delete("/:id", isAuthenticated, isOwner, (req, res, next) => {
+  if (!req.isOwner) {
+    return res.status(405).json({
+      status: "fail",
+      message: "Not allowed to delete other users post",
+    });
+  }
+  Post.findByIdAndDelete(req.params.id)
+    .then((post) => {
+      res.status(204).json({ message: "post deleted" });
+    })
+    .catch((err) => next(err));
+});
+
+//////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////// Comment Routes
+//////////////////////////////////////////////////////////
+
 router.post("/:id/comment", (req, res, next) => {
   const { userId, postId } = req.body;
 
-  // Step 1: Verify the user exists
   User.findById(userId)
     .then((user) => {
       if (!user) {
@@ -115,7 +139,6 @@ router.post("/:postId/:commentId/like", (req, res, next) => {
           message: "Comment does not belong to that post",
         });
       }
-      // Try to refactor and directly update
 
       return Comment.findById(commentId);
     })
@@ -128,7 +151,6 @@ router.post("/:postId/:commentId/like", (req, res, next) => {
       }
 
       if (comment.likes.includes(userId)) {
-        // Remove the userID from likes array
         return res.status(400).json({
           status: "fail",
           message: "You already liked this comment",

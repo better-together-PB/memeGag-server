@@ -32,25 +32,60 @@ L. Backend
   - "/interest/:tag"
 
 POST  [x]- "/signup" *Anon
-POST  [x]- "/login" *Anon
-GET  [x]- "/verify"
+POST  [x]- "/login" *Anon 
+GET  [x]- "/verify" 
 
-GET  [x]- "/user/:id"
-GET  [x]- "/user/:id/:section"
+GET  [x]- "/user/:id" /// Check if user is exists
+GET  [x]- "/user/:id/:section" /// Check if user is exists
 
 
-POST    "/post/create" *PROTECTED /// check if the post/create is protected 
-GET  [x]- "/post/:id"
-PATCH/PUT   "/post/:id" /// ONLY THE CREATOR
-DELETE   "/post/:id" /// ONLY THE CREATOR
+POST  [x]  "/post/create" *PROTECTED 
+GET  [x]- "/post/:id" /// Check if user is exists
+
+PATCH/PUT   "/post/:id" /// ONLY THE CREATOR /// Check if user is exists
+
+DELETE [x] "/post/:id" /// ONLY THE CREATOR
 
 PUT "/post//:postId/like" like or unlike comment // Remove the userID from likes array if already liked
 
 
-POST        [x]- "/post/:postId/comment" - create comment
+POST        [x]- "/post/:postId/comment" - create comment 
 DELETE      "/post/:postId/:commentId" /// ONLY THE CREATOR
 POST         "/post/:postId/:commentId/like" - like or unlike comment // Remove the userID from likes array if already liked
 
 
+create isOwner Middleware
+
+UPDATE /posts/:id **
+DELETE /posts/:id **
 
 
+const isOwner = (req, res, next) => {
+
+    // current user <--- req.payload._id
+    // id of the user that created a resource <-- req.params.id +  Post.findByIdAndDelete(req.params.id)
+
+    if(){
+        res.status(403).
+    } else {
+        next()
+    }
+}
+
+router.put("/:id", isAuthenticated, isOwner, (req, res, next) => {
+router.delete("/:id", isAuthenticated, isOwner, (req, res, next) => {
+
+// Combine the two routes
+// Check for content value
+User Routes
+
+// Check validity of past Id's
+if (!mongoose.Types.ObjectId.isValid(projectId)) {
+    res.status(400).json({ message: 'Specified id is not valid' });
+    return;
+  }
+
+
+
+
+Ask Luis/chatgpt where to catch the invalid Id
