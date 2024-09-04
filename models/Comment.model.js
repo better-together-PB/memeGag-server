@@ -6,7 +6,7 @@ const commentSchema = new Schema(
     user: { type: Schema.Types.ObjectId, ref: "User" },
     post: { type: Schema.Types.ObjectId, ref: "Post" },
     comment: { type: String, required: [true, "Comment is required."] },
-    likes: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    likes: [{ type: Schema.Types.ObjectId, ref: "Like" }],
   },
   {
     // this second object adds extra properties: `createdAt` and `updatedAt`
