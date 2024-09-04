@@ -5,7 +5,9 @@ const Post = require("../models/Post.model");
 const User = require("../models/User.model");
 const Comment = require("../models/Comment.model");
 
-router.post("/create", (req, res, next) => {
+const { isAuthenticated } = require("../middleware/jwt.middleware.js");
+
+router.post("/create", isAuthenticated, (req, res, next) => {
   User.findById(req.body.userId)
     .then((user) => {
       if (!user) {
@@ -126,6 +128,7 @@ router.post("/:postId/:commentId/like", (req, res, next) => {
       }
 
       if (comment.likes.includes(userId)) {
+        // Remove the userID from likes array
         return res.status(400).json({
           status: "fail",
           message: "You already liked this comment",

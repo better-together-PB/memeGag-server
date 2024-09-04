@@ -1,0 +1,56 @@
+L. Backend
+1 Authentication
+  [x] 2. Models
+    [x] a) User
+            [x]-email
+            [x]-password
+            [x]-name
+          [x]-posts
+          [x]-likes
+          [x]-comments
+          [x]-userImage
+    [x] b) Post
+            [x]-title
+          [x] -image link
+          [x]-userId
+        [x]  -tags enum[humor, dark humor, programming, comic, gaming, sports, animals]
+        [x]  -createdAt
+    [x] c) Comment
+            [x]- userId
+            [x]- postId
+            [x]- comment
+          [x]- likes: [{
+      type: ObjectId,
+      ref. User
+            }]
+          [x]-createdAt
+    [x] d) Likes
+            [x] - userId
+            [x] - postId
+3. Routes
+  - "/" page with posts
+  - "/interest/:tag"
+
+POST  [x]- "/signup" *Anon
+POST  [x]- "/login" *Anon
+GET  [x]- "/verify"
+
+GET  [x]- "/user/:id"
+GET  [x]- "/user/:id/:section"
+
+
+POST    "/post/create" *PROTECTED /// check if the post/create is protected 
+GET  [x]- "/post/:id"
+PATCH/PUT   "/post/:id" /// ONLY THE CREATOR
+DELETE   "/post/:id" /// ONLY THE CREATOR
+
+PUT "/post//:postId/like" like or unlike comment // Remove the userID from likes array if already liked
+
+
+POST        [x]- "/post/:postId/comment" - create comment
+DELETE      "/post/:postId/:commentId" /// ONLY THE CREATOR
+POST         "/post/:postId/:commentId/like" - like or unlike comment // Remove the userID from likes array if already liked
+
+
+
+
