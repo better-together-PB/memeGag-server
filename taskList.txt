@@ -31,6 +31,8 @@ L. Backend
   - "/" page with posts
   - "/interest/:tag"
 
+  GET "/post" - display all posts
+
                           POST  [x]- "/signup" *Anon
                           POST  [x]- "/login" *Anon 
                           GET   [x]- "/verify" 
@@ -41,14 +43,15 @@ L. Backend
 
                           POST   [x]  "/post/create" *PROTECTED 
                           GET    [x]- "/post/:id"
-                          DELETE [x] "/post/:id" 
+                          DELETE [x] "/post/:id" / delete the post from comments, like, user
                           PATCH  [x]  "/post/:id"
 
                           POST   [x]- "/post/:postId/comment"
                           POST   [x]- "/post/:postId/:commentId/like"
-                          DELETE [x]- "/post/:postId/:commentId"
+                          DELETE [x]- "/post/:postId/:commentId" 
 
-PUT "/post//:postId/like" like or unlike comment // Remove the userID from likes array if already liked
+
+PUT "/post//:postId/like" like or unlike comment // when liking add the id to the user likes and post likes
 
 
 
@@ -63,3 +66,90 @@ if (!mongoose.Types.ObjectId.isValid(projectId)) {
     return;
   }
 Ask Luis/chatgpt where to catch the invalid Id
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+const jwt = require("jsonwebtoken");
+
+// Instantiate the JWT token validation middleware
+const isAuthenticated = (req, res, next) => {
+  try {
+    // Get the token string from the authorization header - "Bearer eyJh5kp9..."
+    const token = req.headers.authorization.split(" ")[1];
+
+    // Verify the token. Returns payload if the token is valid, otherwise throws an error
+    const payload = jwt.verify(token, process.env.TOKEN_SECRET);
+
+    // Add payload to the request object as req.payload for use in next middleware or route
+    req.payload = payload;
+
+    // Call next() to pass the request to the next middleware function or route
+    next();
+
+  } catch (error) {
+    // We catch the error here and return a 401 status code and an error message
+    // The middleware throws an error if unable to validate the token. It throws an error if:
+    // 1. There is no token
+    // 2. Token is invalid
+    // 3. There is no headers or authorization in req (no token)
+    res.status(401).json("token not provided or not valid");
+  }
+}
+
+
+
+const getCurrentUserInfo = (req, res, next) => {
+  try {
+    // Get the token string from the authorization header - "Bearer eyJh5kp9..."
+    const token = req.headers.authorization.split(" ")[1];
+
+    // Verify the token. Returns payload if the token is valid, otherwise throws an error
+    const payload = jwt.verify(token, process.env.TOKEN_SECRET);
+
+    // Add payload to the request object as req.payload for use in next middleware or route
+    req.payload = payload;
+
+    // Call next() to pass the request to the next middleware function or route
+    next();
+  } catch (error) {
+    req.payload = null;
+    next();
+  }
+};
+
+// Export the middleware so that we can use it to create protected routes
+module.exports = {
+  isAuthenticated
+}
+
+
+
+
+const response = [
+    {
+    title: "",
+    image: "",
+    tags: ["", ""],
+    userId: ""
+    likes: [
+      {
+        userId: 2,
+        userId: 100,
+      },
+      {
+        userId: 3,
+        userId: 100,
+      },
+    ],
+    comments: [
+      "3",
+      "25",
+    ],
+  },
+]

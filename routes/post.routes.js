@@ -4,6 +4,7 @@ const router = express.Router();
 const Post = require("../models/Post.model");
 const User = require("../models/User.model");
 const Comment = require("../models/Comment.model");
+const Like = require("../models/Like.model");
 
 const { isAuthenticated } = require("../middleware/protected.middleware.js");
 const { isOwner } = require("../middleware/isOwner.middleware.js");
@@ -33,6 +34,17 @@ router.post("/create", isAuthenticated, (req, res, next) => {
     })
     .catch((err) => next(err));
 });
+
+// // GET /api/posts
+// router.get("/", getCurrentUserInfo, () => {
+//   // req.payload._id
+//   Post.find()
+//     .populate("likes")
+//     .then((postsFromDB) => {
+//       const result = postsFromDB.map();
+//       res.json(postsFromDB);
+//     });
+// });
 
 router.get("/:id", (req, res, next) => {
   Post.findById(req.params.id)
@@ -70,6 +82,7 @@ router.patch("/:postId", isAuthenticated, isOwner, (req, res, next) => {
     .catch((err) => next(err));
 });
 
+// Delete post from user, comments, likes likes
 router.delete("/:postId", isAuthenticated, isOwner, (req, res, next) => {
   if (!req.isOwner) {
     return res.status(405).json({
@@ -251,4 +264,86 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
     });
 });
 
+//////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////// Post likes Routes
+//////////////////////////////////////////////////////////
+
+// router.post("/:postId/like", isAuthenticated, (req, res, next) => {
+//   const { postId } = req.params;
+//   const userId = req.payload._id;
+
+//   // find the user and check if he exists
+//   User.findById(userId)
+//     .then((user) => {
+//       if (!user) {
+//         return res.status(404).json({
+//           status: "fail",
+//           message: "User not found",
+//         });
+//       }
+
+//       // fine the like from the Like model with the user and post ids
+//       return Like.findOne({ $and: [{ userId }, { postId }] });
+//     })
+//     .then((postLike) => {
+//       if (!postLike) {
+//         // if that returns null we like the post ( create a new document )
+//         return Like.create({ userId, postId }).then((newPostLike) => {
+//           return res.status(201).json({
+//             status: "success",
+//             data: newPostLike,
+//           });
+//         });
+//       } else {
+//         return Like.findByIdAndDelete(postLike._id).then(() => {
+//           res.status(200).json({
+//             message: "Like removed",
+//           });
+//         });
+//       }
+//     });
+// });
+
+router.post("/:postId/like", isAuthenticated, (req, res, next) => {
+  const { postId } = req.params;
+  const userId = req.payload._id;
+
+  // Check if the user exists
+  User.findById(userId)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).json({
+          status: "fail",
+          message: "User not found",
+        });
+      }
+
+      // Find if the like exists for the user and post
+      return Like.findOne({ userId, postId });
+    })
+    .then((postLike) => {
+      if (!postLike) {
+        // If no like exists, create a new like
+        return Like.create({ userId, postId }).then((newPostLike) => {
+          return res.status(201).json({
+            status: "success",
+            message: "Post liked",
+            data: newPostLike,
+          });
+        });
+      }
+
+      // If like already exists, remove it
+      return Like.findByIdAndDelete(postLike._id).then(() => {
+        return res.status(200).json({
+          status: "success",
+          message: "Like removed",
+        });
+      });
+    })
+    .catch((err) => {
+      // Error handling
+      return next(err); // Passes error to Express error handler
+    });
+});
 module.exports = router;

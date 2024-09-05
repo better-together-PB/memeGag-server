@@ -27,6 +27,7 @@ const postSchema = new Schema(
       required: [true, "At least 1 tag is required."],
     },
     userId: { type: Schema.Types.ObjectId, ref: "User" },
+    likes: [{ type: Schema.Types.ObjectId, ref: "Like" }],
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
   },
   {
