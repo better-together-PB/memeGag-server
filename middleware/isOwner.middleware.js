@@ -12,9 +12,9 @@ const isOwner = (req, res, next) => {
       } else {
         req.isOwner = false;
       }
+      next();
     })
-    .catch((error) => next(err))
-    .finally(() => next());
+    .catch((error) => next(error));
 };
 
 module.exports = {

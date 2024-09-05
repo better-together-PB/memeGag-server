@@ -83,7 +83,10 @@ router.patch("/:postId", isAuthenticated, isOwner, (req, res, next) => {
 });
 
 // Delete post from user, comments, likes likes
-router.delete("/:postId", isAuthenticated, isOwner, (req, res, next) => {
+
+/* router.delete("/:postId", isAuthenticated, isOwner, (req, res, next) => {
+  const { postId } = req.params;
+
   if (!req.isOwner) {
     return res.status(405).json({
       status: "fail",
@@ -95,7 +98,7 @@ router.delete("/:postId", isAuthenticated, isOwner, (req, res, next) => {
       res.status(204).json({ message: "post deleted" });
     })
     .catch((err) => next(err));
-});
+}); */
 
 //////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////// Comment Routes
@@ -188,7 +191,7 @@ router.post("/:postId/:commentId/like", isAuthenticated, (req, res, next) => {
       if (comment.likes.includes(userId)) {
         return Comment.findByIdAndUpdate(
           commentId,
-          { $pull: { likes: userId } }, // $pull removes the userId from the likes array
+          { $pull: { likes: userId } },
           { new: true, useFindAndModify: false }
         ).then((asd) => {
           return res.status(204).json({ message: "like from comment deleted" });
@@ -203,7 +206,6 @@ router.post("/:postId/:commentId/like", isAuthenticated, (req, res, next) => {
         console.log("asd");
         res.status(201).json({
           status: "success",
-          // Do we need to send something?
           data: "comment liked",
         });
       });
@@ -215,18 +217,15 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
   const { commentId, postId } = req.params;
   const userId = req.payload._id;
 
-  // Find the comment by ID
   Comment.findById(commentId)
     .then((comment) => {
       if (!comment) {
-        // Comment not found
         return res.status(404).json({
           status: "fail",
           message: "Comment not found",
         });
       }
 
-      // Check if the comment belongs to the logged-in user
       if (!comment.userId.equals(userId)) {
         return res.status(403).json({
           status: "fail",
@@ -234,16 +233,13 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
         });
       }
 
-      // Delete the comment
       return Comment.findByIdAndDelete(commentId);
     })
     .then((deletedComment) => {
       if (!deletedComment) {
-        // If the comment wasn't deleted, return early
         return;
       }
 
-      // Remove the comment ID from the post's comments array
       return Post.findByIdAndUpdate(
         postId,
         { $pull: { comments: commentId } },
@@ -252,7 +248,6 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
     })
     .then((updatedPost) => {
       if (updatedPost) {
-        // Successfully removed comment from post
         return res.status(200).json({
           status: "success",
           message: "Comment deleted from post and database",
@@ -268,47 +263,10 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
 ////////////////////////////////////////////////////////// Post likes Routes
 //////////////////////////////////////////////////////////
 
-// router.post("/:postId/like", isAuthenticated, (req, res, next) => {
-//   const { postId } = req.params;
-//   const userId = req.payload._id;
-
-//   // find the user and check if he exists
-//   User.findById(userId)
-//     .then((user) => {
-//       if (!user) {
-//         return res.status(404).json({
-//           status: "fail",
-//           message: "User not found",
-//         });
-//       }
-
-//       // fine the like from the Like model with the user and post ids
-//       return Like.findOne({ $and: [{ userId }, { postId }] });
-//     })
-//     .then((postLike) => {
-//       if (!postLike) {
-//         // if that returns null we like the post ( create a new document )
-//         return Like.create({ userId, postId }).then((newPostLike) => {
-//           return res.status(201).json({
-//             status: "success",
-//             data: newPostLike,
-//           });
-//         });
-//       } else {
-//         return Like.findByIdAndDelete(postLike._id).then(() => {
-//           res.status(200).json({
-//             message: "Like removed",
-//           });
-//         });
-//       }
-//     });
-// });
-
 router.post("/:postId/like", isAuthenticated, (req, res, next) => {
   const { postId } = req.params;
   const userId = req.payload._id;
 
-  // Check if the user exists
   User.findById(userId)
     .then((user) => {
       if (!user) {
@@ -318,32 +276,66 @@ router.post("/:postId/like", isAuthenticated, (req, res, next) => {
         });
       }
 
-      // Find if the like exists for the user and post
-      return Like.findOne({ userId, postId });
+      return Post.findById(postId).then((post) => {
+        if (!post) {
+          return res.status(404).json({
+            status: "fail",
+            message: "Post not found",
+          });
+        }
+
+        return Like.findOne({ userId, postId });
+      });
     })
     .then((postLike) => {
       if (!postLike) {
-        // If no like exists, create a new like
         return Like.create({ userId, postId }).then((newPostLike) => {
-          return res.status(201).json({
-            status: "success",
-            message: "Post liked",
-            data: newPostLike,
+          const userUpdate = User.findByIdAndUpdate(
+            userId,
+            { $push: { likes: newPostLike._id } },
+            { new: true }
+          );
+
+          const postUpdate = Post.findByIdAndUpdate(
+            postId,
+            { $push: { likes: newPostLike._id } },
+            { new: true }
+          );
+
+          return Promise.all([userUpdate, postUpdate]).then(() => {
+            res.status(201).json({
+              status: "success",
+              message: "Post liked",
+              data: newPostLike,
+            });
           });
         });
       }
 
-      // If like already exists, remove it
       return Like.findByIdAndDelete(postLike._id).then(() => {
-        return res.status(200).json({
-          status: "success",
-          message: "Like removed",
+        const userUpdate = User.findByIdAndUpdate(
+          userId,
+          { $pull: { likes: postLike._id } },
+          { new: true }
+        );
+
+        const postUpdate = Post.findByIdAndUpdate(
+          postId,
+          { $pull: { likes: postLike._id } },
+          { new: true }
+        );
+
+        return Promise.all([userUpdate, postUpdate]).then(() => {
+          res.status(200).json({
+            status: "success",
+            message: "Like removed",
+          });
         });
       });
     })
     .catch((err) => {
-      // Error handling
-      return next(err); // Passes error to Express error handler
+      next(err);
     });
 });
+
 module.exports = router;
