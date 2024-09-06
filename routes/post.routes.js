@@ -251,32 +251,37 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
         });
       }
 
-      return Comment.findByIdAndDelete(commentId);
-    })
-    .then((deletedComment) => {
-      if (!deletedComment) {
-        return;
-      }
+      return Comment.findByIdAndDelete(commentId).then((deletedComment) => {
+        if (!deletedComment) {
+          return;
+        }
 
-      return Post.findByIdAndUpdate(
-        postId,
-        { $pull: { comments: commentId } },
-        { new: true, useFindAndModify: false }
-      );
-    })
-    .then((updatedPost) => {
-      if (updatedPost) {
-        return res.status(200).json({
-          status: "success",
-          message: "Comment deleted from post and database",
+        const postUpdate = Post.findByIdAndUpdate(
+          postId,
+          { $pull: { comments: commentId } },
+          { new: true }
+        );
+
+        const userUpdate = User.findByIdAndUpdate(
+          userId,
+          { $pull: { comments: commentId } },
+          { new: true }
+        );
+
+        return Promise.all([postUpdate, userUpdate]).then(([updatedPost]) => {
+          if (updatedPost) {
+            res.status(200).json({
+              status: "success",
+              message: "Comment deleted from post, user, and database",
+            });
+          }
         });
-      }
+      });
     })
     .catch((err) => {
-      return next(err);
+      next(err);
     });
 });
-
 //////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////// Post likes Routes
 //////////////////////////////////////////////////////////

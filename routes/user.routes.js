@@ -20,17 +20,24 @@ router.get("/:id/:content?", getUserInfo, (req, res, next) => {
 
   User.findById(req.params.id)
     .select(`_id email name profileImage createdAt ${content}`)
-    .populate({ path: content, populate: "likes" })
+    .populate({
+      path: content,
+      select: "postId",
+      populate: {
+        path: `${content === "posts" ? "_id" : "postId"}`,
+        populate: {
+          path: `${content === "posts" ? "_id" : "likes"}`,
+          select: "userId -_id",
+        },
+      },
+    })
     .lean()
     .then((user) => {
       if (!user) {
         res.status(400).json({ message: "User does not exist" });
         return;
       }
-
-      /////////
-      console.log(user[req.params.content]);
-
+      console.log(user[content]);
       res.status(200).json({
         status: "success",
         data: user,

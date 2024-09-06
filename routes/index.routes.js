@@ -8,18 +8,14 @@ router.get("/", getUserInfo, (req, res, next) => {
   Post.find()
     .populate({
       path: "likes",
-      select: "userId -_id", // Only include these fields from User
+      select: "userId -_id",
     })
     .lean()
     .then((posts) => {
       const data = posts.map((post) => {
         const isLikedByUser = post.likes.some((likeId) => {
-          console.log(likeId);
-          console.log(req.userId);
-
           return likeId.userId.equals(req.userId);
         });
-        console.log(isLikedByUser);
         return {
           ...post,
           likes: post.likes.length,
@@ -33,16 +29,5 @@ router.get("/", getUserInfo, (req, res, next) => {
       });
     });
 });
-
-// // GET /api/posts
-// router.get("/", getCurrentUserInfo, () => {
-//   // req.payload._id
-//   Post.find()
-//     .populate("likes")
-//     .then((postsFromDB) => {
-//       const result = postsFromDB.map();
-//       res.json(postsFromDB);
-//     });
-// });
 
 module.exports = router;
