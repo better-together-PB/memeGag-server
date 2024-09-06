@@ -35,17 +35,6 @@ router.post("/create", isAuthenticated, (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// // GET /api/posts
-// router.get("/", getCurrentUserInfo, () => {
-//   // req.payload._id
-//   Post.find()
-//     .populate("likes")
-//     .then((postsFromDB) => {
-//       const result = postsFromDB.map();
-//       res.json(postsFromDB);
-//     });
-// });
-
 router.get("/:id", (req, res, next) => {
   Post.findById(req.params.id)
     .populate({ path: "userId", select: "_id name" })
@@ -82,23 +71,52 @@ router.patch("/:postId", isAuthenticated, isOwner, (req, res, next) => {
     .catch((err) => next(err));
 });
 
-// Delete post from user, comments, likes likes
-
-/* router.delete("/:postId", isAuthenticated, isOwner, (req, res, next) => {
+router.delete("/:postId", isAuthenticated, isOwner, async (req, res, next) => {
   const { postId } = req.params;
 
   if (!req.isOwner) {
     return res.status(405).json({
       status: "fail",
-      message: "Not allowed to delete other users post",
+      message: "Not allowed to delete other users' posts",
     });
   }
-  Post.findByIdAndDelete(req.params.postId)
-    .then((post) => {
-      res.status(204).json({ message: "post deleted" });
-    })
-    .catch((err) => next(err));
-}); */
+
+  try {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    const relatedComments = await Comment.find({ postId }).select("_id");
+    const relatedLikes = await Like.find({ postId }).select("_id");
+
+    const commentIds = relatedComments.map((comment) => comment._id);
+    const likeIds = relatedLikes.map((like) => like._id);
+
+    await Comment.deleteMany({ postId });
+    await Like.deleteMany({ postId });
+
+    await User.updateMany(
+      {},
+      {
+        $pull: {
+          posts: postId,
+          likes: { $in: likeIds },
+          comments: { $in: commentIds },
+        },
+      }
+    );
+
+    await Post.findByIdAndDelete(postId);
+
+    res
+      .status(204)
+      .json({ message: "Post and related data deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+});
 
 //////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////// Comment Routes

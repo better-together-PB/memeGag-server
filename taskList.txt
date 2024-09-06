@@ -31,27 +31,26 @@ L. Backend
   - "/" page with posts
   - "/interest/:tag"
 
-  GET "/post" - display all posts
+  GET "/" - display all posts
 
                           POST  [x]- "/signup" *Anon
                           POST  [x]- "/login" *Anon 
                           GET   [x]- "/verify" 
 
                           GET   [x]- "/user/:id"
-                          GET   [x]- "/user/:id/:section"
+                          GET   [x]- "/user/:id/:section" 
 
 
                           POST   [x]  "/post/create" *PROTECTED 
                           GET    [x]- "/post/:id"
-                          DELETE [x] "/post/:id" / delete the post from comments, like, user
+                          DELETE [x] "/post/:id" 
                           PATCH  [x]  "/post/:id"
 
                           POST   [x]- "/post/:postId/comment"
                           POST   [x]- "/post/:postId/:commentId/like"
                           DELETE [x]- "/post/:postId/:commentId" 
 
-
-PUT "/post//:postId/like" like or unlike comment // when liking add the id to the user likes and post likes
+                          PUT [x]- "/post//:postId/like"
 
 
 
