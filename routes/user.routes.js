@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 
 const User = require("../models/User.model");
@@ -22,13 +23,14 @@ router.get("/:id/:content?", getUserInfo, (req, res, next) => {
     .select(`_id email name profileImage createdAt ${content}`)
     .populate({
       path: content,
-      select: "postId",
       populate: {
-        path: `${content === "posts" ? "_id" : "postId"}`,
-        populate: {
-          path: `${content === "posts" ? "_id" : "likes"}`,
-          select: "userId -_id",
-        },
+        path: `${content === "posts" ? "likes" : "postId"}`,
+        ...(content !== "posts" && {
+          populate: {
+            path: "likes",
+            select: "userId -_id",
+          },
+        }),
       },
     })
     .lean()
@@ -37,10 +39,37 @@ router.get("/:id/:content?", getUserInfo, (req, res, next) => {
         res.status(400).json({ message: "User does not exist" });
         return;
       }
-      console.log(user[content]);
+
+      let posts;
+      if (content === "posts") {
+        posts = user[content];
+      } else {
+        posts = user[content].map((p) => p.postId);
+      }
+
+      const postsModified = posts.map((post) => {
+        const isLikedByUser = post.likes.some((likeId) => {
+          return likeId.userId.equals(req.userId);
+        });
+        return {
+          ...post,
+          likes: post.likes.length,
+          comments: post.comments.length,
+          isLikedByUser,
+        };
+      });
+
+      const data = {
+        id: user._id,
+        email: user.email,
+        username: user.name,
+        profileImage: user.profileImage,
+        posts: postsModified,
+      };
+
       res.status(200).json({
         status: "success",
-        data: user,
+        data,
       });
     })
     .catch((err) => next(err));

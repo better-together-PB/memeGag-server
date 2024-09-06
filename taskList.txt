@@ -31,26 +31,27 @@ L. Backend
   - "/" page with posts
   - "/interest/:tag"
 
-  GET "/" - display all posts
+                           GET  [x]- "/"
 
                           POST  [x]- "/signup" *Anon
                           POST  [x]- "/login" *Anon 
                           GET   [x]- "/verify" 
 
-                          GET   [x]- "/user/:id"
-                          GET   [x]- "/user/:id/:section" 
+                          GET   [x]- "/user/:id/:content?" 
 
 
                           POST   [x]  "/post/create" *PROTECTED 
-                          GET    [x]- "/post/:id"
+                          GET    [x]- "/post/:id" have the number of comments and likes, a boolian isLikedByUser, all comments populated
                           DELETE [x] "/post/:id" 
                           PATCH  [x]  "/post/:id"
+
+                          PUT [x]- "/post//:postId/like"
 
                           POST   [x]- "/post/:postId/comment"
                           POST   [x]- "/post/:postId/:commentId/like"
                           DELETE [x]- "/post/:postId/:commentId" 
 
-                          PUT [x]- "/post//:postId/like"
+
 
 
 
