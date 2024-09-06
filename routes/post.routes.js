@@ -6,6 +6,7 @@ const User = require("../models/User.model");
 const Comment = require("../models/Comment.model");
 const Like = require("../models/Like.model");
 
+const getUserInfo = require("../middleware/getUserInfo.middleware.js");
 const { isAuthenticated } = require("../middleware/protected.middleware.js");
 const { isOwner } = require("../middleware/isOwner.middleware.js");
 
@@ -35,17 +36,30 @@ router.post("/create", isAuthenticated, (req, res, next) => {
     .catch((err) => next(err));
 });
 
-router.get("/:id", (req, res, next) => {
+router.get("/:id", getUserInfo, (req, res, next) => {
   Post.findById(req.params.id)
-    .populate({ path: "userId", select: "_id name" })
+    .populate({
+      path: "comments likes",
+      select: "-_id -postId -updatedAt -__v",
+    })
     .then((post) => {
       if (!post) {
         res.status(400).json({ message: "Post does not exist" });
         return;
       }
+      const isLikedByUser = post.likes.some((likeId) => {
+        return likeId.userId.equals(req.userId);
+      });
+      const data = {
+        ...post.toObject(),
+        likes: post.likes.length,
+        comments: post.comments.length,
+        isLikedByUser,
+        usersComments: post.comments,
+      };
       res.status(200).json({
         status: "success",
-        data: post,
+        data: data,
       });
     })
     .catch((err) => next(err));
@@ -282,6 +296,7 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
       next(err);
     });
 });
+
 //////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////// Post likes Routes
 //////////////////////////////////////////////////////////
@@ -360,5 +375,9 @@ router.post("/:postId/like", isAuthenticated, (req, res, next) => {
       next(err);
     });
 });
+
+//////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////// Post Tag Routes
+//////////////////////////////////////////////////////////
 
 module.exports = router;

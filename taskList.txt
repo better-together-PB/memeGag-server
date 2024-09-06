@@ -41,7 +41,7 @@ L. Backend
 
 
                           POST   [x]  "/post/create" *PROTECTED 
-                          GET    [x]- "/post/:id" have the number of comments and likes, a boolian isLikedByUser, all comments populated
+                          GET    [x]- "/post/:id" 
                           DELETE [x] "/post/:id" 
                           PATCH  [x]  "/post/:id"
 
@@ -51,7 +51,10 @@ L. Backend
                           POST   [x]- "/post/:postId/:commentId/like"
                           DELETE [x]- "/post/:postId/:commentId" 
 
+// Give proper error/success messages and status to all routes
+// Check if what we're sending is optimal
 
+// Create Tag routes
 
 
 
