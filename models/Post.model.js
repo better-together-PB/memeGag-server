@@ -15,15 +15,7 @@ const postSchema = new Schema(
     },
     tags: {
       type: [String],
-      enum: [
-        "humor",
-        "dark humor",
-        "programming",
-        "comic",
-        "gaming",
-        "sports",
-        "animals",
-      ],
+      enum: ["humor", "WTF", "nimals", "comic", "gaming", "sports"],
       required: [true, "At least 1 tag is required."],
     },
     userId: { type: Schema.Types.ObjectId, ref: "User" },
