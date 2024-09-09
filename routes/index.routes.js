@@ -12,17 +12,19 @@ router.get("/", getUserInfo, (req, res, next) => {
     })
     .lean()
     .then((posts) => {
-      const data = posts.map((post) => {
-        const isLikedByUser = post.likes.some((likeId) => {
-          return likeId.userId.equals(req.userId);
-        });
-        return {
-          ...post,
-          likes: post.likes.length,
-          comments: post.comments.length,
-          isLikedByUser,
-        };
-      });
+      const data = posts
+        .map((post) => {
+          const isLikedByUser = post.likes.some((likeId) => {
+            return likeId.userId.equals(req.userId);
+          });
+          return {
+            ...post,
+            likes: post.likes.length,
+            comments: post.comments.length,
+            isLikedByUser,
+          };
+        })
+        .reverse();
       res.status(200).json({
         status: "success",
         data,

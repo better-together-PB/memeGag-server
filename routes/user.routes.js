@@ -47,17 +47,19 @@ router.get("/:id/:content?", getUserInfo, (req, res, next) => {
         posts = user[content].map((p) => p.postId);
       }
 
-      const postsModified = posts.map((post) => {
-        const isLikedByUser = post.likes.some((likeId) => {
-          return likeId.userId.equals(req.userId);
-        });
-        return {
-          ...post,
-          likes: post.likes.length,
-          comments: post.comments.length,
-          isLikedByUser,
-        };
-      });
+      const postsModified = posts
+        .map((post) => {
+          const isLikedByUser = post.likes.some((likeId) => {
+            return likeId.userId.equals(req.userId);
+          });
+          return {
+            ...post,
+            likes: post.likes.length,
+            comments: post.comments.length,
+            isLikedByUser,
+          };
+        })
+        .reverse();
 
       const data = {
         id: user._id,
