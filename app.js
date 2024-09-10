@@ -13,9 +13,11 @@ const express = require("express");
 
 const app = express();
 
+const originUrl = process.env.ORIGIN || "http://localhost:5173";
+
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: [originUrl],
   })
 );
 
