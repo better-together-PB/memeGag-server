@@ -5,6 +5,18 @@ const router = express.Router();
 const User = require("../models/User.model");
 const getUserInfo = require("../middleware/getUserInfo.middleware.js");
 
+router.get("/details/:id", (req, res, next) => {
+  User.findById(req.params.id)
+    .select("profileImage name")
+    .then((data) => {
+      res.status(200).json({
+        status: "success",
+        data,
+      });
+    })
+    .catch((err) => next(err));
+});
+
 // FIND A WAY TO GET THE NUMBER OF OBJECTIDS IN THE LIKES / POSTS / COMMENTS ARRAY AND JUST GET THAT NUMBER
 router.get("/:id/:content?", getUserInfo, (req, res, next) => {
   if (!req.params.content) {
