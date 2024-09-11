@@ -183,6 +183,22 @@ router.post("/:id/comment", isAuthenticated, (req, res, next) => {
     .catch((err) => next(err));
 });
 
+router.get("/:id/comments", (req, res, next) => {
+  Comment.find({ postId: req.params.id })
+    .populate({
+      path: "userId",
+      select: "name profileImage",
+    })
+    .then((comments) => {
+      const data = comments.reverse();
+      res.status(200).json({
+        status: "success",
+        data,
+      });
+    })
+    .catch((err) => next(err));
+});
+
 router.post("/:postId/:commentId/like", isAuthenticated, (req, res, next) => {
   const userId = req.payload._id;
   const { postId, commentId } = req.params;

@@ -5,7 +5,7 @@ const router = express.Router();
 const User = require("../models/User.model");
 const getUserInfo = require("../middleware/getUserInfo.middleware.js");
 
-router.get("/details/:id", (req, res, next) => {
+router.get("/details/:id", getUserInfo, (req, res, next) => {
   User.findById(req.params.id)
     .select("profileImage name")
     .then((data) => {
