@@ -44,34 +44,42 @@ router.post("/signup", (req, res, next) => {
   }
 
   // Check the users collection if a user with the same email already exists
-  User.findOne({ email })
-    .then((foundUser) => {
-      // If the user with the same email already exists, send an error response
-      if (foundUser) {
-        res.status(400).json({ message: "User already exists." });
-        return;
-      }
+  User.findOne({ email }).then((foundUser) => {
+    // If the user with the same email already exists, send an error response
+    if (foundUser) {
+      res.status(400).json({ message: "Email already exists." });
+      return;
+    }
 
-      // If email is unique, proceed to hash the password
-      const salt = bcrypt.genSaltSync(saltRounds);
-      const hashedPassword = bcrypt.hashSync(password, salt);
+    User.findOne({ name })
+      .then((foundUser) => {
+        // If the user with the same email already exists, send an error response
+        if (foundUser) {
+          res.status(400).json({ message: "Username already exists." });
+          return;
+        }
 
-      // Create the new user in the database
-      // We return a pending promise, which allows us to chain another `then`
-      return User.create({ email, password: hashedPassword, name });
-    })
-    .then((createdUser) => {
-      // Deconstruct the newly created user object to omit the password
-      // We should never expose passwords publicly
-      const { email, name, _id } = createdUser;
+        // If email is unique, proceed to hash the password
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const hashedPassword = bcrypt.hashSync(password, salt);
 
-      // Create a new object that doesn't expose the password
-      const user = { email, name, _id };
+        // Create the new user in the database
+        // We return a pending promise, which allows us to chain another `then`
+        return User.create({ email, password: hashedPassword, name });
+      })
+      .then((createdUser) => {
+        // Deconstruct the newly created user object to omit the password
+        // We should never expose passwords publicly
+        const { email, name, _id } = createdUser;
 
-      // Send a json response containing the user object
-      res.status(201).json({ user: user });
-    })
-    .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
+        // Create a new object that doesn't expose the password
+        const user = { email, name, _id };
+
+        // Send a json response containing the user object
+        res.status(201).json({ user: user });
+      })
+      .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.
+  });
 });
 
 // POST  /auth/login - Verifies email and password and returns a JWT
@@ -112,7 +120,7 @@ router.post("/login", (req, res, next) => {
         // Send the token as the response
         res.status(200).json({ authToken: authToken });
       } else {
-        res.status(401).json({ message: "Unable to authenticate the user" });
+        res.status(401).json({ message: "Wrong Password or Email" });
       }
     })
     .catch((err) => next(err)); // In this case, we send error handling to the error handling middleware.

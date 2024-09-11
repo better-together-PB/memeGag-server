@@ -20,18 +20,22 @@ router.post("/create", isAuthenticated, (req, res, next) => {
           message: "User not found",
         });
       }
-      return Post.create(req.body).then((post) => {
-        return User.findByIdAndUpdate(
-          req.payload._id,
-          { $push: { posts: post._id } },
-          { new: true, useFindAndModify: false }
-        ).then(() => {
-          res.status(201).json({
-            status: "success",
-            data: post,
+      return Post.create(req.body)
+        .then((post) => {
+          return User.findByIdAndUpdate(
+            req.payload._id,
+            { $push: { posts: post._id } },
+            { new: true, useFindAndModify: false }
+          ).then(() => {
+            res.status(201).json({
+              status: "success",
+              data: post,
+            });
           });
-        });
-      });
+        })
+        .catch(() =>
+          res.status(401).json({ message: "Complete all required fields" })
+        );
     })
     .catch((err) => next(err));
 });
@@ -172,7 +176,9 @@ router.post("/:id/comment", isAuthenticated, (req, res, next) => {
         { $push: { comments: comment._id } },
         { new: true, useFindAndModify: false }
       );
-      return Promise.all([userUpdate, postUpdate]).then(() => comment);
+      return Promise.all([userUpdate, postUpdate]).then(() =>
+        comment.populate("userId")
+      );
     })
     .then((comment) => {
       res.status(201).json({
@@ -241,22 +247,31 @@ router.post("/:postId/:commentId/like", isAuthenticated, (req, res, next) => {
           commentId,
           { $pull: { likes: userId } },
           { new: true, useFindAndModify: false }
-        ).then((asd) => {
-          return res.status(204).json({ message: "like from comment deleted" });
-        });
+        )
+          .populate({
+            path: "userId",
+            select: "name profileImage",
+          })
+          .then((comment) => {
+            return res.status(200).json({ status: "success", data: comment });
+          });
       }
 
       return Comment.findByIdAndUpdate(
         commentId,
         { $push: { likes: userId } },
         { new: true, useFindAndModify: false }
-      ).then((updatedComment) => {
-        console.log("asd");
-        res.status(201).json({
-          status: "success",
-          data: "comment liked",
+      )
+        .populate({
+          path: "userId",
+          select: "name profileImage",
+        })
+        .then((updatedComment) => {
+          res.status(201).json({
+            status: "success",
+            data: updatedComment,
+          });
         });
-      });
     })
     .catch((err) => next(err));
 });
