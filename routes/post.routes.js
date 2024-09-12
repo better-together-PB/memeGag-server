@@ -323,9 +323,7 @@ router.delete("/:postId/:commentId", isAuthenticated, (req, res, next) => {
         });
       });
     })
-    .catch((err) => {
-      next(err);
-    });
+    .catch((err) => next(err));
 });
 
 //////////////////////////////////////////////////////////

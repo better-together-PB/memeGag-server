@@ -29,7 +29,8 @@ router.get("/", getUserInfo, (req, res, next) => {
         status: "success",
         data,
       });
-    });
+    })
+    .catch((err) => next(err));
 });
 
 module.exports = router;
