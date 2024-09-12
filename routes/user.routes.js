@@ -60,6 +60,10 @@ router.get("/:id/:content?", getUserInfo, (req, res, next) => {
       }
 
       const postsModified = posts
+        .filter(
+          (obj, index, self) =>
+            index === self.findIndex((o) => o._id === obj._id)
+        )
         .map((post) => {
           const isLikedByUser = post.likes.some((likeId) => {
             return likeId.userId.equals(req.userId);
