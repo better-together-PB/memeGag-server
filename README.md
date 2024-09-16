@@ -93,6 +93,10 @@ This application is a social media platform where users can create posts, commen
 - **isAuthenticated**: Middleware to ensure the user is authenticated.
 - **isOwner**: Middleware to check if the request user is the owner of the resource (post or comment).
 
+## Link to client repository
+
+https://github.com/better-together-PB/memeGag-client
+
 ## Visit website
 
 https://memegag.netlify.app/
