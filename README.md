@@ -1,4 +1,4 @@
-# Social Media App
+# memeGAG App
 
 ## Overview
 
@@ -16,6 +16,7 @@ This application is a social media platform where users can create posts, commen
 ### User Routes
 
 - **Get User Details**
+
   - `GET /user/details/:id`
   - Retrieves details of a user by their ID.
 
@@ -26,10 +27,12 @@ This application is a social media platform where users can create posts, commen
 ### Authentication Routes
 
 - **Sign Up**
+
   - `POST /auth/signup`
   - Creates a new user.
 
 - **Login**
+
   - `POST /auth/login`
   - Authenticates a user and returns a JWT.
 
@@ -40,18 +43,22 @@ This application is a social media platform where users can create posts, commen
 ### Post Routes
 
 - **Create Post**
+
   - `POST /post/create`
   - Creates a new post.
 
 - **Get Post**
+
   - `GET /post/:id`
   - Retrieves a post by its ID.
 
 - **Update Post**
+
   - `PATCH /post/:postId`
   - Updates the title of a post.
 
 - **Delete Post**
+
   - `DELETE /post/:postId`
   - Deletes a post by its ID.
 
@@ -62,14 +69,17 @@ This application is a social media platform where users can create posts, commen
 ### Comment Routes
 
 - **Add Comment**
+
   - `POST /post/:id/comment`
   - Adds a comment to a post.
 
 - **Get Comments**
+
   - `GET /post/:id/comments`
   - Retrieves all comments for a specific post.
 
 - **Like/Dislike Comment**
+
   - `POST /post/:postId/:commentId/like`
   - Likes or unlikes a comment.
 
@@ -84,4 +94,5 @@ This application is a social media platform where users can create posts, commen
 - **isOwner**: Middleware to check if the request user is the owner of the resource (post or comment).
 
 ## Visit website
+
 https://memegag.netlify.app/
